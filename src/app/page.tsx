@@ -12,6 +12,12 @@ export default function Home() {
   const [maxLevel, setMaxLevel] = useState(0);
   const [gameKey, setGameKey] = useState(0); // Used to remount Game
 
+  const [isMounted, setIsMounted] = useState(false);
+
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const handleTargetAchieved = useCallback((points: number) => {
     setScore(prev => prev + points);
     setCurrentTargetLevel(getRandomTargetLevel());
@@ -31,6 +37,8 @@ export default function Home() {
     setMaxLevel(0);
     setGameKey(prev => prev + 1);
   };
+
+  if (!isMounted) return null;
 
   const currentTargetProps = GET_LEVEL(currentTargetLevel);
 
