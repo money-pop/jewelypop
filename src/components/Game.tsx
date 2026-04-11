@@ -18,9 +18,10 @@ interface GameProps {
   currentTargetLevel: number;
   onTargetAchieved: (score: number) => void;
   onGameOver: (score: number, maxLevel: number) => void;
+  onNextSpawnLevelChange?: (level: number) => void;
 }
 
-export default function Game({ currentTargetLevel, onTargetAchieved, onGameOver }: GameProps) {
+export default function Game({ currentTargetLevel, onTargetAchieved, onGameOver, onNextSpawnLevelChange }: GameProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<Matter.Engine | null>(null);
   const renderRef = useRef<Matter.Render | null>(null);
@@ -31,6 +32,7 @@ export default function Game({ currentTargetLevel, onTargetAchieved, onGameOver 
   targetLevelRef.current = currentTargetLevel;
 
   const [currentSpawnLevel, setCurrentSpawnLevel] = useState(getRandomSpawnLevel());
+  const [nextSpawnLevel, setNextSpawnLevel] = useState(getRandomSpawnLevel());
   const [railX, setRailX] = useState(GAME_WIDTH / 2);
   const [isShooting, setIsShooting] = useState(false);
   
@@ -230,7 +232,10 @@ export default function Game({ currentTargetLevel, onTargetAchieved, onGameOver 
     World.add(engineRef.current.world, newCircle);
 
     // After stabilization, spawn next
-    setCurrentSpawnLevel(getRandomSpawnLevel());
+    const upcomingLevel = getRandomSpawnLevel();
+    setCurrentSpawnLevel(nextSpawnLevel);
+    setNextSpawnLevel(upcomingLevel);
+    onNextSpawnLevelChange?.(upcomingLevel);
     
     // Unlock shooting after a delay (this should technically wait for complete stabilization but 500ms works nicely)
     setTimeout(() => {

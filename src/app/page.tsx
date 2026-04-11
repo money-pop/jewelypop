@@ -2,11 +2,12 @@
 
 import React, { useState, useCallback } from 'react';
 import Game from '@/components/Game';
-import { getRandomTargetLevel, GET_LEVEL, TARGET_SCORES } from '@/game/constants';
+import { getRandomTargetLevel, getRandomSpawnLevel, GET_LEVEL, TARGET_SCORES } from '@/game/constants';
 
 export default function Home() {
   const [score, setScore] = useState(0);
   const [currentTargetLevel, setCurrentTargetLevel] = useState(getRandomTargetLevel());
+  const [nextSpawnLevel, setNextSpawnLevel] = useState(getRandomSpawnLevel());
   const [isGameOver, setIsGameOver] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
   const [maxLevel, setMaxLevel] = useState(0);
@@ -30,9 +31,14 @@ export default function Home() {
     setIsGameOver(true);
   }, [score]);
 
+  const handleNextSpawnLevelChange = useCallback((level: number) => {
+    setNextSpawnLevel(level);
+  }, []);
+
   const restartGame = () => {
     setScore(0);
     setCurrentTargetLevel(getRandomTargetLevel());
+    setNextSpawnLevel(getRandomSpawnLevel());
     setIsGameOver(false);
     setMaxLevel(0);
     setGameKey(prev => prev + 1);
@@ -41,6 +47,7 @@ export default function Home() {
   if (!isMounted) return null;
 
   const currentTargetProps = GET_LEVEL(currentTargetLevel);
+  const nextSpawnProps = GET_LEVEL(nextSpawnLevel);
 
   return (
     <div className="min-h-screen bg-[#0f0f13] text-white flex flex-col items-center justify-center font-sans">
@@ -52,15 +59,31 @@ export default function Home() {
             {score}
           </span>
         </div>
-        
+
+        <div className="flex flex-col items-center">
+          <span className="text-gray-400 text-sm font-semibold uppercase tracking-wider mb-1">Next</span>
+          <div className="flex items-center gap-2 bg-gray-800/80 px-3 py-1.5 rounded-full border border-gray-700 shadow-inner">
+            <div
+              className="rounded-full shadow-md"
+              style={{
+                width: 20,
+                height: 20,
+                backgroundColor: nextSpawnProps.color,
+                boxShadow: `0 0 8px ${nextSpawnProps.color}80, inset 0 2px 4px rgba(255,255,255,0.4)`
+              }}
+            />
+            <span className="font-bold text-gray-200 text-sm">Lv.{nextSpawnLevel}</span>
+          </div>
+        </div>
+
         <div className="flex flex-col items-end">
           <span className="text-gray-400 text-sm font-semibold uppercase tracking-wider mb-1">Target</span>
           <div className="flex items-center gap-2 bg-gray-800/80 px-3 py-1.5 rounded-full border border-gray-700 shadow-inner">
-             <div 
+             <div
                 className="rounded-full shadow-md"
                 style={{
-                  width: 24, 
-                  height: 24, 
+                  width: 24,
+                  height: 24,
                   backgroundColor: currentTargetProps.color,
                   boxShadow: `0 0 10px ${currentTargetProps.color}80, inset 0 2px 4px rgba(255,255,255,0.4)`
                 }}
@@ -72,11 +95,12 @@ export default function Home() {
 
       {/* Main Game Area */}
       <div className="relative">
-        <Game 
+        <Game
           key={gameKey}
-          currentTargetLevel={currentTargetLevel} 
+          currentTargetLevel={currentTargetLevel}
           onTargetAchieved={handleTargetAchieved}
           onGameOver={handleGameOver}
+          onNextSpawnLevelChange={handleNextSpawnLevelChange}
         />
 
         {/* Game Over Overlay */}
